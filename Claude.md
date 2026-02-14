@@ -21,3 +21,9 @@ I want to develop deep, expert-level knowledge of the Model Context Protocol (MC
 - Plan and produce a comprehensive book outline that covers all of the above and more, designed to take me from fundamentals to expert-level understanding. The book should be thorough and detailed; do not cut corners.
 - Whenever a chapter is complete, commit and push it to the repository.
 - If my questions or feedback require revisions, update the relevant chapters in place rather than appending patches. The book should read as a single, continuous, and cohesive document at all times.
+
+## Working Instructions
+
+- Begin planning immediately. Use the full extent of your capabilities.
+- Continuously update progress on every small change — whether to the plan, the content, or in response to my instructions. Do not wait for permission to proceed.
+- Commit and push to the repository on every incremental progress update.
