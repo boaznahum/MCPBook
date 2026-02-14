@@ -6,8 +6,8 @@
 |---|---------|--------|------|
 | - | Preface | Not Started | - |
 | **Part I: Foundations** | | | |
-| 1 | The Rise of AI Tool Use and the Need for a Protocol | Not Started | - |
-| 2 | MCP Architecture — The Big Picture | Not Started | - |
+| 1 | The Rise of AI Tool Use and the Need for a Protocol | **Complete** | chapters/01-the-rise-of-ai-tool-use.md |
+| 2 | MCP Architecture — The Big Picture | **In Progress** | chapters/02-mcp-architecture.md |
 | 3 | The Protocol Layer — JSON-RPC 2.0 in Depth | Not Started | - |
 | 4 | Transport Mechanisms | Not Started | - |
 | **Part II: The Three Pillars** | | | |
@@ -47,3 +47,5 @@
 - **2026-02-14**: Created comprehensive book outline (OUTLINE.md)
 - **2026-02-14**: Created status tracker (STATUS.md)
 - **2026-02-14**: Research in progress — gathering MCP specification details
+- **2026-02-14**: Chapter 1 complete and committed
+- **2026-02-14**: Note: Python implementation prioritized per user request

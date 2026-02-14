@@ -146,43 +146,43 @@
 
 ## PART III: BUILDING MCP SERVERS
 
-### Chapter 9: Your First MCP Server — TypeScript
-- 9.1 Setting Up the Development Environment
-- 9.2 The TypeScript MCP SDK: Overview and Installation
-- 9.3 The `McpServer` High-Level API
-- 9.4 Building a Simple Tool Server
-  - 9.4.1 Defining Tools with `server.tool()`
-  - 9.4.2 Input Validation with Zod Schemas
-  - 9.4.3 Connecting via stdio Transport
-  - 9.4.4 Testing Your Server
-- 9.5 Adding Resources
-  - 9.5.1 Static Resources with `server.resource()`
-  - 9.5.2 Dynamic Resources with URI Templates
-- 9.6 Adding Prompts
-- 9.7 The Low-Level `Server` API
-  - 9.7.1 Request Handlers
-  - 9.7.2 When to Use Low-Level vs. High-Level
-- 9.8 Error Handling and Logging
-- 9.9 Complete Example: A File System MCP Server
+### Chapter 9: Your First MCP Server — Python (Primary)
+- 9.1 Setting Up the Python Development Environment
+- 9.2 The Python MCP SDK: Overview and Installation
+- 9.3 FastMCP: The High-Level Pythonic API
+  - 9.3.1 Creating a Server with `FastMCP`
+  - 9.3.2 Defining Tools with `@mcp.tool()`
+  - 9.3.3 Defining Resources with `@mcp.resource()`
+  - 9.3.4 Defining Prompts with `@mcp.prompt()`
+- 9.4 Type Annotations and Automatic Schema Generation
+- 9.5 The `Context` Object
+  - 9.5.1 Progress Reporting
+  - 9.5.2 Logging
+  - 9.5.3 Accessing Request Metadata
+- 9.6 Running and Testing Your Server
+- 9.7 The Low-Level Python Server API
+- 9.8 Error Handling Patterns
+- 9.9 Complete Example: A Database Query MCP Server
 - Summary
 
-### Chapter 10: Your First MCP Server — Python
-- 10.1 Setting Up the Python Development Environment
-- 10.2 The Python MCP SDK: Overview and Installation
-- 10.3 FastMCP: The High-Level Pythonic API
-  - 10.3.1 Creating a Server with `FastMCP`
-  - 10.3.2 Defining Tools with `@mcp.tool()`
-  - 10.3.3 Defining Resources with `@mcp.resource()`
-  - 10.3.4 Defining Prompts with `@mcp.prompt()`
-- 10.4 Type Annotations and Automatic Schema Generation
-- 10.5 The `Context` Object
-  - 10.5.1 Progress Reporting
-  - 10.5.2 Logging
-  - 10.5.3 Accessing Request Metadata
-- 10.6 Running and Testing Your Server
-- 10.7 The Low-Level Python Server API
-- 10.8 Error Handling Patterns
-- 10.9 Complete Example: A Database Query MCP Server
+### Chapter 10: Your First MCP Server — TypeScript
+- 10.1 Setting Up the Development Environment
+- 10.2 The TypeScript MCP SDK: Overview and Installation
+- 10.3 The `McpServer` High-Level API
+- 10.4 Building a Simple Tool Server
+  - 10.4.1 Defining Tools with `server.tool()`
+  - 10.4.2 Input Validation with Zod Schemas
+  - 10.4.3 Connecting via stdio Transport
+  - 10.4.4 Testing Your Server
+- 10.5 Adding Resources
+  - 10.5.1 Static Resources with `server.resource()`
+  - 10.5.2 Dynamic Resources with URI Templates
+- 10.6 Adding Prompts
+- 10.7 The Low-Level `Server` API
+  - 10.7.1 Request Handlers
+  - 10.7.2 When to Use Low-Level vs. High-Level
+- 10.8 Error Handling and Logging
+- 10.9 Complete Example: A File System MCP Server
 - Summary
 
 ### Chapter 11: Transport Implementation in Servers
