@@ -7,17 +7,17 @@
 | - | Preface | Not Started | - |
 | **Part I: Foundations** | | | |
 | 1 | The Rise of AI Tool Use and the Need for a Protocol | **Complete** | chapters/01-the-rise-of-ai-tool-use.md |
-| 2 | MCP Architecture — The Big Picture | **In Progress** | chapters/02-mcp-architecture.md |
-| 3 | The Protocol Layer — JSON-RPC 2.0 in Depth | Not Started | - |
-| 4 | Transport Mechanisms | Not Started | - |
+| 2 | MCP Architecture — The Big Picture | **Complete** | chapters/02-mcp-architecture.md |
+| 3 | The Protocol Layer — JSON-RPC 2.0 in Depth | **Complete** | chapters/03-the-protocol-layer.md |
+| 4 | Transport Mechanisms | **Complete** | chapters/04-transport-mechanisms.md |
 | **Part II: The Three Pillars** | | | |
 | 5 | Tools — Giving AI the Power to Act | Not Started | - |
 | 6 | Resources — Exposing Data and Context | Not Started | - |
 | 7 | Prompts — Reusable Interaction Templates | Not Started | - |
 | 8 | How AI Models Interact with MCP | Not Started | - |
 | **Part III: Building MCP Servers** | | | |
-| 9 | Your First MCP Server — TypeScript | Not Started | - |
-| 10 | Your First MCP Server — Python | Not Started | - |
+| 9 | Your First MCP Server — Python (Primary) | Not Started | - |
+| 10 | Your First MCP Server — TypeScript | Not Started | - |
 | 11 | Transport Implementation in Servers | Not Started | - |
 | 12 | Building MCP Clients | Not Started | - |
 | **Part IV: Advanced Features and Patterns** | | | |
@@ -49,3 +49,4 @@
 - **2026-02-14**: Research in progress — gathering MCP specification details
 - **2026-02-14**: Chapter 1 complete and committed
 - **2026-02-14**: Note: Python implementation prioritized per user request
+- **2026-02-14**: Chapters 2, 3, 4 complete — Part I: Foundations finished
