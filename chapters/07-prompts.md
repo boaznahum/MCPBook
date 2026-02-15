@@ -14,7 +14,7 @@ Key characteristics of prompts:
 
 - **User-controlled**: Unlike tools (which the AI decides to use), prompts are typically selected by the user or host application
 - **Parameterized**: Prompts can accept arguments that customize the output
-- **Expand to messages**: A prompt expands into one or more messages (user, assistant, or system messages) that are inserted into the conversation
+- **Expand to messages**: A prompt expands into one or more messages with `"user"` or `"assistant"` roles that are inserted into the conversation
 - **Can embed resources**: Prompts can include resource content, bringing data and instructions together
 - **Reusable**: The same prompt can be used in different conversations with different arguments
 
@@ -137,7 +137,269 @@ The response contains:
 
 ---
 
-## 7.4 Prompt Arguments and Dynamic Content
+## 7.4 Step by Step: What Happens When You Use a Prompt
+
+MCP prompts involve three participants — the **server** (defines the prompt), the **client/host** (manages the UI and the LLM conversation), and the **user** (picks the prompt). Here is exactly what happens, from start to finish.
+
+### The Scenario
+
+A development team has built an MCP server with a `code_review` prompt. A developer is using Claude Desktop (the host application) connected to this server. The developer wants to review some Python code for security issues.
+
+### Step 1: Server Defines the Prompt (Startup)
+
+When the MCP server starts, it registers prompt templates — just like it registers tools:
+
+```python
+@mcp.prompt()
+async def code_review(language: str = "any", focus: str = "all") -> list[Message]:
+    return [
+        UserMessage(
+            f"You are an expert {language} code reviewer. "
+            f"Analyze the following code with a focus on {focus}.\n\n"
+            f"For each issue found, provide:\n"
+            f"1. The specific line or code section\n"
+            f"2. The severity (Critical / High / Medium / Low)\n"
+            f"3. A concrete fix with code example"
+        )
+    ]
+```
+
+At this point, nothing has been sent anywhere. The server just has a function ready to call.
+
+### Step 2: Client Discovers Available Prompts (Connection)
+
+When Claude Desktop connects to the server, it calls `prompts/list`:
+
+```
+Client → Server:  prompts/list
+Server → Client:  [{ name: "code_review", arguments: [language, focus] }]
+```
+
+Claude Desktop now knows this prompt exists. It might display it as a **slash command** (`/code_review`) in the UI, or list it in a menu.
+
+### Step 3: User Selects the Prompt (Human Action)
+
+The developer types `/code_review` in Claude Desktop, or picks it from a dropdown menu.
+
+**This is a human action.** The AI model did not choose this — the developer did. This is the fundamental difference between prompts and tools:
+
+| | Who decides to use it? |
+|--|----------------------|
+| **Tool** | The AI model (autonomously) |
+| **Prompt** | The user (explicitly) |
+
+### Step 4: Client Collects Arguments (UI)
+
+Claude Desktop sees that `code_review` has two arguments (`language` and `focus`). It shows a form or asks the developer:
+
+```
+Language: python
+Focus: security
+```
+
+The developer fills these in.
+
+### Step 5: Client Calls `prompts/get` (Protocol)
+
+Claude Desktop sends the request to the MCP server:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 42,
+  "method": "prompts/get",
+  "params": {
+    "name": "code_review",
+    "arguments": {
+      "language": "python",
+      "focus": "security"
+    }
+  }
+}
+```
+
+### Step 6: Server Expands the Template (Server Code)
+
+The server runs the `code_review` function with the given arguments. The function returns:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 42,
+  "result": {
+    "description": "Security-focused Python code review",
+    "messages": [
+      {
+        "role": "user",
+        "content": {
+          "type": "text",
+          "text": "You are an expert python code reviewer. Analyze the following code with a focus on security.\n\nFor each issue found, provide:\n1. The specific line or code section\n2. The severity (Critical / High / Medium / Low)\n3. A concrete fix with code example"
+        }
+      }
+    ]
+  }
+}
+```
+
+Note: the server returns **messages with roles** — this is structured data, not raw text.
+
+### Step 7: Client Injects Messages into the LLM Conversation (Client Code)
+
+This is the step most people miss. Claude Desktop takes the returned messages and **inserts them into the conversation it sends to the AI model**. The developer may also paste their code into the conversation. The final API call to Claude looks something like this:
+
+```json
+{
+  "model": "claude-sonnet-4-5-20250929",
+  "messages": [
+    {
+      "role": "user",
+      "content": "You are an expert python code reviewer. Analyze the following code with a focus on security.\n\nFor each issue found, provide:\n1. The specific line or code section\n2. The severity (Critical / High / Medium / Low)\n3. A concrete fix with code example"
+    },
+    {
+      "role": "user",
+      "content": "```python\ndef login(username, password):\n    query = f\"SELECT * FROM users WHERE name='{username}'\"\n    ...\n```"
+    }
+  ]
+}
+```
+
+The first message came from the MCP prompt. The second came from the developer. Claude sees them all as a normal conversation.
+
+### Step 8: The AI Responds (AI)
+
+Claude processes the messages and responds with a detailed security review, exactly as instructed by the prompt template. It has no idea that the first message came from an MCP prompt rather than the developer typing it directly — it all looks the same to the model.
+
+### The Complete Flow in One Diagram
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│                                                                      │
+│  ┌─────────┐         ┌──────────────┐         ┌──────────────┐      │
+│  │  SERVER  │         │ CLIENT/HOST  │         │     USER     │      │
+│  │         │         │ (Claude      │         │ (Developer)  │      │
+│  │         │         │  Desktop)    │         │              │      │
+│  └────┬────┘         └──────┬───────┘         └──────┬───────┘      │
+│       │                     │                        │              │
+│       │   1. prompts/list   │                        │              │
+│       │←────────────────────│                        │              │
+│       │────────────────────→│                        │              │
+│       │  [code_review, ...] │  2. Shows /code_review │              │
+│       │                     │───────────────────────→│              │
+│       │                     │                        │              │
+│       │                     │  3. User picks prompt  │              │
+│       │                     │←───────────────────────│              │
+│       │                     │                        │              │
+│       │                     │  4. Asks for arguments │              │
+│       │                     │───────────────────────→│              │
+│       │                     │    language=python     │              │
+│       │                     │    focus=security      │              │
+│       │                     │←───────────────────────│              │
+│       │                     │                        │              │
+│       │   5. prompts/get    │                        │              │
+│       │      (code_review,  │                        │              │
+│       │       python,       │                        │              │
+│       │       security)     │                        │              │
+│       │←────────────────────│                        │              │
+│       │                     │                        │              │
+│       │   6. Returns        │                        │              │
+│       │      expanded       │                        │              │
+│       │      messages       │                        │              │
+│       │────────────────────→│                        │              │
+│       │                     │                        │              │
+│       │                     │  7. Injects messages   │              │
+│       │                     │     into conversation  │              │
+│       │                     │     + sends to Claude  │              │
+│       │                     │         API            │              │
+│       │                     │                        │              │
+│       │                     │  8. Claude responds    │              │
+│       │                     │     with code review   │              │
+│       │                     │───────────────────────→│              │
+│       │                     │                        │              │
+│  └────┴────┘         └──────┴───────┘         └──────┴───────┘      │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+### Key Insights
+
+**The AI model never sees `prompts/get`.** It never knows a prompt was used. It just receives messages in its conversation — the same way it would if the user had typed the instructions manually.
+
+**The client is the orchestrator.** The client discovers prompts, presents them to the user, collects arguments, calls the server, and injects the result into the conversation. The server just expands templates.
+
+**Prompts are not tools.** The AI cannot invoke a prompt. Only the user (through the client UI) can select a prompt. This is a deliberate design choice — prompts shape how the AI thinks, so the user should be the one choosing them.
+
+---
+
+## 7.5 Allowed Roles: User and Assistant Only
+
+MCP prompt messages support exactly **two roles**:
+
+| Role | Allowed | Purpose |
+|------|---------|---------|
+| `"user"` | Yes | Messages that appear to come from the user |
+| `"assistant"` | Yes | Messages that appear to come from the assistant |
+| `"system"` | **No** | Not supported in MCP prompts |
+
+There is no `"system"` role. This is a deliberate design choice.
+
+**Why no system role?** System prompts control the AI's fundamental behavior — its personality, safety constraints, capabilities, and boundaries. These are the host application's responsibility. If an MCP server could inject system-level instructions, it could potentially override safety guardrails or change the AI's persona in ways the host application did not intend.
+
+```
+┌─────────────────────────────────────────────────┐
+│ Host Application (Claude Desktop)               │
+│                                                 │
+│  System prompt: "You are a helpful assistant.   │
+│  Never reveal confidential data..."             │  ← Host controls this
+│                                                 │
+│  ┌─────────────────────────────────────┐        │
+│  │ MCP Prompt Messages                 │        │
+│  │                                     │        │
+│  │  role: "user" → ✓ Allowed           │        │  ← MCP server controls these
+│  │  role: "assistant" → ✓ Allowed      │        │
+│  │  role: "system" → ✗ NOT allowed     │        │
+│  └─────────────────────────────────────┘        │
+└─────────────────────────────────────────────────┘
+```
+
+### What Each Role Does in Practice
+
+**`"user"` role messages** are the most common. They provide instructions and context to the AI:
+
+```json
+{
+  "role": "user",
+  "content": {
+    "type": "text",
+    "text": "Review the following code for security vulnerabilities..."
+  }
+}
+```
+
+When injected into the conversation, the AI treats this as if the user typed it.
+
+**`"assistant"` role messages** are used in multi-turn prompts to pre-load the AI with a response pattern — showing it *how* to respond:
+
+```json
+[
+  {
+    "role": "user",
+    "content": { "type": "text", "text": "I need help debugging an error." }
+  },
+  {
+    "role": "assistant",
+    "content": {
+      "type": "text",
+      "text": "I'll help you debug this. Let me ask a few clarifying questions first:\n1. When did this error start occurring?\n2. Can you reproduce it consistently?\n3. What have you already tried?"
+    }
+  }
+]
+```
+
+The AI sees this exchange as if it already happened and continues in the same style — asking structured clarifying questions before diving in.
+
+---
+
+## 7.6 Prompt Arguments and Dynamic Content
 
 Prompt arguments allow the same prompt to produce different output based on the input. Arguments are simple key-value pairs (both strings) that the server uses to customize the prompt's messages.
 
@@ -183,7 +445,7 @@ async def analyze_data(dataset: str, analysis_type: str = "summary") -> list[Mes
 
 ---
 
-## 7.5 Multi-Turn Prompt Structures
+## 7.7 Multi-Turn Prompt Structures
 
 Prompts can expand into multiple messages, including both user and assistant messages. This allows prompts to set up multi-turn interactions:
 
@@ -222,7 +484,7 @@ Multi-turn prompts are useful for:
 
 ---
 
-## 7.6 Embedded Resources in Prompts
+## 7.8 Embedded Resources in Prompts
 
 Prompts can include resource content directly, combining instructions with data:
 
@@ -285,7 +547,7 @@ A single message can also contain multiple content items:
 
 ---
 
-## 7.7 Prompts vs. System Prompts vs. Tools
+## 7.9 Prompts vs. System Prompts vs. Tools
 
 Understanding the differences between MCP prompts, system prompts, and tools helps you choose the right mechanism:
 
@@ -314,7 +576,7 @@ Understanding the differences between MCP prompts, system prompts, and tools hel
 
 ---
 
-## 7.8 Designing Effective Prompt Templates
+## 7.10 Designing Effective Prompt Templates
 
 ### Be Specific
 
@@ -362,7 +624,7 @@ Use embedded resources to provide current, relevant context. A prompt that says 
 
 ---
 
-## 7.9 Real-World Prompt Examples
+## 7.11 Real-World Prompt Examples
 
 ### SQL Query Helper
 
