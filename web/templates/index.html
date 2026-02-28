@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCPBook</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>MCPBook</h1>
+        <p>Model Context Protocol — The Complete Guide</p>
+    </header>
+
+    <main>
+        <section class="content">
+            <h2>Welcome to MCPBook</h2>
+            <p>Your comprehensive guide to the Model Context Protocol.</p>
+        </section>
+    </main>
+
+    <footer class="status-bar">
+        <span class="status-connect">{{ connect_message }}</span>
+    </footer>
+</body>
+</html>
